@@ -1,4 +1,4 @@
-package com.example.yo_te_llevo
+package com.yotellevo.app
 
 import io.flutter.embedding.android.FlutterActivity
 
