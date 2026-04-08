@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="yo_te_llevo"
+        android:label="Yo Te Llevo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
