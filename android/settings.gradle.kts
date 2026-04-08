@@ -8,6 +8,20 @@ pluginManagement {
             flutterSdkPath
         }
 
+    val mapboxToken = run {
+        val envFile = file("../.env")
+        var token = ""
+        if (envFile.exists()) {
+            envFile.readLines().forEach { line ->
+                val trimmed = line.trim()
+                if (trimmed.startsWith("MAPBOX_SECRET_TOKEN=") && !trimmed.startsWith("#")) {
+                    token = trimmed.substringAfter("=").trim()
+                }
+            }
+        }
+        token.ifEmpty { System.getenv("MAPBOX_SECRET_TOKEN") ?: "" }
+    }
+
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
@@ -17,7 +31,7 @@ pluginManagement {
         maven {
             url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
             credentials.username = "mapbox"
-            credentials.password = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").getOrElse("")
+            credentials.password = mapboxToken
         }
     }
 }
@@ -25,6 +39,9 @@ pluginManagement {
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "8.11.1" apply false
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services") version("4.3.15") apply false
+    // END: FlutterFire Configuration
     id("org.jetbrains.kotlin.android") version "2.2.20" apply false
 }
 
