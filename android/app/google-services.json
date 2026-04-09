@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "923539260911",
+    "project_id": "yo-te-llevo-bd3a8",
+    "storage_bucket": "yo-te-llevo-bd3a8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923539260911:android:5a82e96d2cc78910d9221a",
+        "android_client_info": {
+          "package_name": "com.yotellevo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN17sO0bhkXqBOnfdlzC-RCYbkP-j0oUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
