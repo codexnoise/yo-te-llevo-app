@@ -15,3 +15,5 @@ final isConnectedProvider = FutureProvider<bool>((ref) async {
   final networkInfo = ref.watch(networkInfoProvider);
   return networkInfo.isConnected;
 });
+
+// TODO: CHECK ALL THE FEATURES ADDED BY THE AI AGENT 🤖
