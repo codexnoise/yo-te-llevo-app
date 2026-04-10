@@ -8,6 +8,84 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// ---------------------------------------------------------------------------
+// Generate google-services.json from .env
+// ---------------------------------------------------------------------------
+fun readEnvFile(): Map<String, String> {
+    val envFile = file("../../.env")
+    val env = mutableMapOf<String, String>()
+    if (envFile.exists()) {
+        envFile.readLines().forEach { line ->
+            val trimmed = line.trim()
+            if (!trimmed.startsWith("#") && trimmed.contains("=")) {
+                val key = trimmed.substringBefore("=").trim()
+                val value = trimmed.substringAfter("=").trim()
+                env[key] = value
+            }
+        }
+    }
+    return env
+}
+
+tasks.register("generateGoogleServicesJson") {
+    description = "Generates google-services.json from .env variables"
+    val envFile = file("../../.env")
+    val outputFile = file("google-services.json")
+    inputs.file(envFile)
+    outputs.file(outputFile)
+
+    doLast {
+        val env = readEnvFile()
+        val projectNumber = env["FIREBASE_MESSAGING_SENDER_ID"] ?: ""
+        val projectId = env["FIREBASE_PROJECT_ID"] ?: ""
+        val storageBucket = env["FIREBASE_STORAGE_BUCKET"] ?: ""
+        val appId = env["FIREBASE_ANDROID_APP_ID"] ?: ""
+        val apiKey = env["FIREBASE_ANDROID_API_KEY"] ?: ""
+
+        val json = """
+{
+  "project_info": {
+    "project_number": "$projectNumber",
+    "project_id": "$projectId",
+    "storage_bucket": "$storageBucket"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "$appId",
+        "android_client_info": {
+          "package_name": "com.yotellevo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "$apiKey"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+""".trimIndent()
+        outputFile.writeText(json)
+        logger.lifecycle("Generated google-services.json from .env")
+    }
+}
+
+afterEvaluate {
+    tasks.matching {
+        it.name != "generateGoogleServicesJson" && it.name.contains("GoogleServices")
+    }.configureEach {
+        dependsOn("generateGoogleServicesJson")
+    }
+}
+
 android {
     namespace = "com.yotellevo.app"
     compileSdk = flutter.compileSdkVersion
