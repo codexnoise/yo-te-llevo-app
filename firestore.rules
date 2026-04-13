@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // /users/{userId}: cualquier usuario autenticado puede leer perfiles
+    // (necesario para mostrar info del conductor en el matching), pero solo
+    // el dueño puede crear/actualizar/borrar su propio documento.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+
+      // /users/{userId}/vehicle/current
+      match /vehicle/{vehicleId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
