@@ -1,1 +1,33 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"CONFIGURE_VIA_ENV","appId":"CONFIGURE_VIA_ENV","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"CONFIGURE_VIA_ENV","appId":"CONFIGURE_VIA_ENV","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"CONFIGURE_VIA_ENV","configurations":{"android":"CONFIGURE_VIA_ENV","ios":"CONFIGURE_VIA_ENV"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "CONFIGURE_VIA_ENV",
+          "appId": "CONFIGURE_VIA_ENV",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "CONFIGURE_VIA_ENV",
+          "appId": "CONFIGURE_VIA_ENV",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "CONFIGURE_VIA_ENV",
+          "configurations": {
+            "android": "CONFIGURE_VIA_ENV",
+            "ios": "CONFIGURE_VIA_ENV"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}
