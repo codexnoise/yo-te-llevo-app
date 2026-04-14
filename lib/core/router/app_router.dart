@@ -7,6 +7,8 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/vehicle_setup_screen.dart';
+import '../../features/routes/presentation/screens/create_route_screen.dart';
+import '../../features/routes/presentation/screens/driver_routes_screen.dart';
 import '../theme/app_colors.dart';
 import 'go_router_refresh_stream.dart';
 
@@ -40,6 +42,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/vehicle-setup',
         name: 'vehicle-setup',
         builder: (context, state) => const VehicleSetupScreen(),
+      ),
+      GoRoute(
+        path: '/create-route',
+        name: 'create-route',
+        builder: (context, state) => const CreateRouteScreen(),
+      ),
+      GoRoute(
+        path: '/driver-routes',
+        name: 'driver-routes',
+        builder: (context, state) => const DriverRoutesScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => ScaffoldWithNavBar(child: child),
