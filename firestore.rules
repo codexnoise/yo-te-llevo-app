@@ -17,5 +17,21 @@ service cloud.firestore {
         allow write: if request.auth != null && request.auth.uid == userId;
       }
     }
+
+    // /routes/{routeId}: cualquier usuario autenticado puede leer rutas
+    // activas (necesario para el matching engine). Solo el conductor dueño
+    // puede crear/actualizar/borrar su propia ruta.
+    match /routes/{routeId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.driverId;
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.driverId;
+    }
+
+    // /matches/{matchId}: bloqueado hasta el Módulo 6 (booking/confirmación).
+    match /matches/{matchId} {
+      allow read, write: if false;
+    }
   }
 }
