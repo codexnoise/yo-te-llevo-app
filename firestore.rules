@@ -3,18 +3,52 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helpers -------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isMatchParticipant(matchData) {
+      return isSignedIn()
+        && (request.auth.uid == matchData.passengerId
+            || request.auth.uid == matchData.driverId);
+    }
+
+    // Estados permitidos y transiciones para /matches (spec 6.1, §9).
+    function isValidStatus(s) {
+      return s in ['pending','accepted','rejected','active','completed','cancelled'];
+    }
+
+    function isAllowedTransition(from, to) {
+      return (from == 'pending' && to in ['accepted','rejected','cancelled'])
+          || (from == 'accepted' && to in ['active','cancelled'])
+          || (from == 'active' && to == 'completed')
+          || (from == to);
+    }
+
+    function matchImmutableFieldsUnchanged() {
+      return request.resource.data.passengerId == resource.data.passengerId
+          && request.resource.data.driverId == resource.data.driverId
+          && request.resource.data.routeId == resource.data.routeId
+          && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
     // /users/{userId}: cualquier usuario autenticado puede leer perfiles
     // (necesario para mostrar info del conductor en el matching), pero solo
     // el dueño puede crear/actualizar/borrar su propio documento.
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      allow read: if isSignedIn();
+      allow create: if isSelf(userId);
+      allow update, delete: if isSelf(userId);
 
       // /users/{userId}/vehicle/current
       match /vehicle/{vehicleId} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null && request.auth.uid == userId;
+        allow read: if isSignedIn();
+        allow write: if isSelf(userId);
       }
     }
 
@@ -22,16 +56,50 @@ service cloud.firestore {
     // activas (necesario para el matching engine). Solo el conductor dueño
     // puede crear/actualizar/borrar su propia ruta.
     match /routes/{routeId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
         && request.auth.uid == request.resource.data.driverId;
-      allow update, delete: if request.auth != null
+      allow update, delete: if isSignedIn()
         && request.auth.uid == resource.data.driverId;
     }
 
-    // /matches/{matchId}: bloqueado hasta el Módulo 6 (booking/confirmación).
+    // /matches/{matchId}: viajes / solicitudes de carpooling (spec M6).
     match /matches/{matchId} {
-      allow read, write: if false;
+      allow read: if isMatchParticipant(resource.data);
+
+      allow create: if isSignedIn()
+        && request.resource.data.passengerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && isValidStatus(request.resource.data.status);
+
+      allow update: if isMatchParticipant(resource.data)
+        && matchImmutableFieldsUnchanged()
+        && isValidStatus(request.resource.data.status)
+        && isAllowedTransition(resource.data.status, request.resource.data.status);
+
+      allow delete: if false;
+
+      // /matches/{matchId}/messages/{messageId} (preparado para M7).
+      match /messages/{messageId} {
+        allow read: if isSignedIn()
+          && (request.auth.uid == get(/databases/$(database)/documents/matches/$(matchId)).data.passengerId
+              || request.auth.uid == get(/databases/$(database)/documents/matches/$(matchId)).data.driverId);
+        allow create: if isSignedIn()
+          && request.resource.data.senderId == request.auth.uid
+          && (request.auth.uid == get(/databases/$(database)/documents/matches/$(matchId)).data.passengerId
+              || request.auth.uid == get(/databases/$(database)/documents/matches/$(matchId)).data.driverId);
+        allow update: if isSignedIn()
+          && request.resource.data.senderId == resource.data.senderId;
+        allow delete: if false;
+      }
+    }
+
+    // /ratings/{ratingId}: calificaciones (spec M8, adelanto de reglas).
+    match /ratings/{ratingId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.fromUserId == request.auth.uid;
+      allow update, delete: if false;
     }
   }
 }

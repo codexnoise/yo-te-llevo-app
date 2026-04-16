@@ -12,6 +12,7 @@ class UserModel extends UserEntity {
   static const String fRating = 'rating';
   static const String fTotalTrips = 'totalTrips';
   static const String fCreatedAt = 'createdAt';
+  static const String fFcmToken = 'fcmToken';
 
   const UserModel({
     required super.id,
@@ -23,6 +24,7 @@ class UserModel extends UserEntity {
     super.phone,
     super.rating = 5.0,
     super.totalTrips = 0,
+    super.fcmToken,
   });
 
   factory UserModel.fromEntity(UserEntity entity) {
@@ -36,6 +38,7 @@ class UserModel extends UserEntity {
       phone: entity.phone,
       rating: entity.rating,
       totalTrips: entity.totalTrips,
+      fcmToken: entity.fcmToken,
     );
   }
 
@@ -50,6 +53,7 @@ class UserModel extends UserEntity {
       phone: phone,
       rating: rating,
       totalTrips: totalTrips,
+      fcmToken: fcmToken,
     );
   }
 
@@ -77,6 +81,7 @@ class UserModel extends UserEntity {
       rating: (data[fRating] as num?)?.toDouble() ?? 5.0,
       totalTrips: (data[fTotalTrips] as num?)?.toInt() ?? 0,
       createdAt: createdAt,
+      fcmToken: data[fFcmToken] as String?,
     );
   }
 
@@ -94,6 +99,7 @@ class UserModel extends UserEntity {
       fTotalTrips: totalTrips,
       fCreatedAt:
           useServerTimestamp ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt),
+      fFcmToken: fcmToken,
     };
   }
 }

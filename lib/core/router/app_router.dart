@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/matching/presentation/screens/match_results_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/vehicle_setup_screen.dart';
 import '../../features/routes/presentation/screens/create_route_screen.dart';
 import '../../features/routes/presentation/screens/driver_routes_screen.dart';
+import '../../features/trips/presentation/screens/trip_detail_screen.dart';
+import '../../features/trips/presentation/screens/trips_screen.dart';
 import '../theme/app_colors.dart';
 import 'go_router_refresh_stream.dart';
 
@@ -53,6 +56,41 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'driver-routes',
         builder: (context, state) => const DriverRoutesScreen(),
       ),
+      GoRoute(
+        path: '/search/results',
+        name: 'search-results',
+        builder: (context, state) => const MatchResultsScreen(),
+      ),
+      // Detalle de viaje: fuera del shell para que ocupe pantalla completa.
+      GoRoute(
+        path: '/trips/:matchId',
+        name: 'trip-detail',
+        builder: (context, state) => TripDetailScreen(
+          matchId: state.pathParameters['matchId']!,
+        ),
+        routes: [
+          // Stub para M7 (chat). Evita navegación rota al tocar "Chatear".
+          GoRoute(
+            path: 'chat',
+            name: 'trip-chat',
+            builder: (context, state) => _PendingModuleScreen(
+              title: 'Chat',
+              message:
+                  'El chat se habilita en el Módulo 7. Volvé al detalle del viaje.',
+            ),
+          ),
+        ],
+      ),
+      // Stub para M8 (rating).
+      GoRoute(
+        path: '/rate/:matchId/:toUserId',
+        name: 'rate',
+        builder: (context, state) => _PendingModuleScreen(
+          title: 'Calificar',
+          message:
+              'El sistema de calificaciones se habilita en el Módulo 8.',
+        ),
+      ),
       ShellRoute(
         builder: (context, state, child) => ScaffoldWithNavBar(child: child),
         routes: [
@@ -64,8 +102,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/trips',
             name: 'trips',
-            builder:
-                (context, state) => const _PlaceholderScreen(title: 'Viajes'),
+            builder: (context, state) => const TripsScreen(),
           ),
           GoRoute(
             path: '/profile',
@@ -139,6 +176,34 @@ class _PlaceholderScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text('$title - En construcción', style: const TextStyle(fontSize: 18)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PendingModuleScreen extends StatelessWidget {
+  final String title;
+  final String message;
+
+  const _PendingModuleScreen({required this.title, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.hourglass_empty,
+                  size: 56, color: AppColors.textSecondary),
+              const SizedBox(height: 12),
+              Text(message, textAlign: TextAlign.center),
+            ],
+          ),
         ),
       ),
     );

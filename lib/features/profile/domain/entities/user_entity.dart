@@ -12,6 +12,7 @@ class UserEntity extends Equatable {
   final double rating;
   final int totalTrips;
   final DateTime createdAt;
+  final String? fcmToken;
 
   const UserEntity({
     required this.id,
@@ -23,6 +24,7 @@ class UserEntity extends Equatable {
     this.phone,
     this.rating = 5.0,
     this.totalTrips = 0,
+    this.fcmToken,
   });
 
   bool get isDriver => role == UserRole.driver || role == UserRole.both;
@@ -39,6 +41,7 @@ class UserEntity extends Equatable {
     double? rating,
     int? totalTrips,
     DateTime? createdAt,
+    String? fcmToken,
   }) {
     return UserEntity(
       id: id ?? this.id,
@@ -50,6 +53,7 @@ class UserEntity extends Equatable {
       rating: rating ?? this.rating,
       totalTrips: totalTrips ?? this.totalTrips,
       createdAt: createdAt ?? this.createdAt,
+      fcmToken: fcmToken ?? this.fcmToken,
     );
   }
 
@@ -64,5 +68,6 @@ class UserEntity extends Equatable {
         rating,
         totalTrips,
         createdAt,
+        fcmToken,
       ];
 }

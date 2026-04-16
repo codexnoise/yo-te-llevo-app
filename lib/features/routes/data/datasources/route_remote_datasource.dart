@@ -13,6 +13,7 @@ abstract class RouteRemoteDataSource {
   Future<void> updateRoute(RouteModel route);
   Future<List<RouteModel>> findRoutesNearby(LatLng point,
       {String field = RouteModel.fGeohashOrigin});
+  Future<RouteModel> getRoute(String routeId);
 }
 
 class RouteRemoteDataSourceImpl implements RouteRemoteDataSource {
@@ -95,6 +96,19 @@ class RouteRemoteDataSourceImpl implements RouteRemoteDataSource {
       }
 
       return routesById.values.toList();
+    } on FirebaseException catch (e) {
+      throw ServerException(message: _firestoreMessage(e));
+    }
+  }
+
+  @override
+  Future<RouteModel> getRoute(String routeId) async {
+    try {
+      final snap = await _routes.doc(routeId).get();
+      if (!snap.exists) {
+        throw const ServerException(message: 'Ruta no encontrada');
+      }
+      return RouteModel.fromFirestore(snap);
     } on FirebaseException catch (e) {
       throw ServerException(message: _firestoreMessage(e));
     }

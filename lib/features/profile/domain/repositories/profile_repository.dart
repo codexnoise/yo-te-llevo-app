@@ -14,4 +14,9 @@ abstract class ProfileRepository {
   Future<Either<Failure, VehicleEntity?>> getVehicle(String uid);
 
   Future<Either<Failure, void>> saveVehicle(String uid, VehicleEntity vehicle);
+
+  /// Actualiza el token FCM del usuario. Se llama desde [NotificationService]
+  /// al inicio de sesión y cuando `onTokenRefresh` emite uno nuevo. Pasar
+  /// null limpia el token (p. ej. tras logout).
+  Future<Either<Failure, void>> updateFcmToken(String uid, String? token);
 }

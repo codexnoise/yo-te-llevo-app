@@ -7,6 +7,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 import 'app.dart';
 import 'core/constants/app_constants.dart';
+import 'core/services/notification_service.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -17,6 +18,9 @@ Future<void> main() async {
 
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize FCM + local notifications (canal, permisos, handlers).
+  await NotificationService.instance.init();
 
   // Initialize Hive
   await Hive.initFlutter();

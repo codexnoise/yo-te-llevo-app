@@ -95,4 +95,17 @@ class DriverRouteRepositoryImpl implements DriverRouteRepository {
       return Left(ServerFailure(message: e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, RouteEntity>> getRoute(String routeId) async {
+    if (!await _networkInfo.isConnected) {
+      return const Left(NetworkFailure(message: 'Sin conexión a internet'));
+    }
+    try {
+      final model = await _remoteDataSource.getRoute(routeId);
+      return Right(model.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
 }
