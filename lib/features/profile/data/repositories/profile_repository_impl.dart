@@ -86,4 +86,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Left(ServerFailure(message: e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> updateFcmToken(
+      String uid, String? token) async {
+    if (!await _networkInfo.isConnected) {
+      return const Left(NetworkFailure(message: 'Sin conexión a internet'));
+    }
+    try {
+      await _remoteDataSource.updateFcmToken(uid, token);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
 }

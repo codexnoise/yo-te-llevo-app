@@ -11,6 +11,7 @@ abstract class ProfileRemoteDataSource {
   Future<void> updateUser(UserModel user);
   Future<VehicleModel?> getVehicle(String uid);
   Future<void> saveVehicle(String uid, VehicleModel vehicle);
+  Future<void> updateFcmToken(String uid, String? token);
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -74,6 +75,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<void> saveVehicle(String uid, VehicleModel vehicle) async {
     try {
       await _vehicleDoc(uid).set(vehicle.toFirestore(), SetOptions(merge: true));
+    } on FirebaseException catch (e) {
+      throw ServerException(message: _firestoreMessage(e));
+    }
+  }
+
+  @override
+  Future<void> updateFcmToken(String uid, String? token) async {
+    try {
+      await _users.doc(uid).update({UserModel.fFcmToken: token});
     } on FirebaseException catch (e) {
       throw ServerException(message: _firestoreMessage(e));
     }

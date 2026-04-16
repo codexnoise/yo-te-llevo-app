@@ -14,4 +14,6 @@ abstract class DriverRouteRepository {
   Future<Either<Failure, RouteEntity>> updateRoute(RouteEntity route);
 
   Future<Either<Failure, List<RouteEntity>>> findRoutesNearby(LatLng point);
+
+  Future<Either<Failure, RouteEntity>> getRoute(String routeId);
 }
