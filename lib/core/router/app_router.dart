@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/matching/presentation/screens/match_results_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/vehicle_setup_screen.dart';
@@ -69,14 +70,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           matchId: state.pathParameters['matchId']!,
         ),
         routes: [
-          // Stub para M7 (chat). Evita navegación rota al tocar "Chatear".
           GoRoute(
             path: 'chat',
             name: 'trip-chat',
-            builder: (context, state) => _PendingModuleScreen(
-              title: 'Chat',
-              message:
-                  'El chat se habilita en el Módulo 7. Volvé al detalle del viaje.',
+            builder: (context, state) => ChatScreen(
+              matchId: state.pathParameters['matchId']!,
             ),
           ),
         ],
