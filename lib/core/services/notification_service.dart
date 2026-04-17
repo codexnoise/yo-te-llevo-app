@@ -184,7 +184,12 @@ class NotificationService {
     final router = _router;
     if (router == null) return;
     final matchId = data['matchId'];
-    if (matchId is String && matchId.isNotEmpty) {
+    if (matchId is! String || matchId.isEmpty) return;
+
+    final type = data['type'];
+    if (type == 'chat_message') {
+      router.go('/trips/$matchId/chat');
+    } else {
       router.go('/trips/$matchId');
     }
   }
