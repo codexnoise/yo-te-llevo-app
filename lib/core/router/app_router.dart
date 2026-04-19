@@ -9,6 +9,7 @@ import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/matching/presentation/screens/match_results_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/vehicle_setup_screen.dart';
+import '../../features/ratings/presentation/screens/rating_screen.dart';
 import '../../features/routes/presentation/screens/create_route_screen.dart';
 import '../../features/routes/presentation/screens/driver_routes_screen.dart';
 import '../../features/trips/presentation/screens/trip_detail_screen.dart';
@@ -79,14 +80,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // Stub para M8 (rating).
       GoRoute(
         path: '/rate/:matchId/:toUserId',
         name: 'rate',
-        builder: (context, state) => _PendingModuleScreen(
-          title: 'Calificar',
-          message:
-              'El sistema de calificaciones se habilita en el Módulo 8.',
+        builder: (context, state) => RatingScreen(
+          matchId: state.pathParameters['matchId']!,
+          toUserId: state.pathParameters['toUserId']!,
         ),
       ),
       ShellRoute(
@@ -180,30 +179,3 @@ class _PlaceholderScreen extends StatelessWidget {
   }
 }
 
-class _PendingModuleScreen extends StatelessWidget {
-  final String title;
-  final String message;
-
-  const _PendingModuleScreen({required this.title, required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.hourglass_empty,
-                  size: 56, color: AppColors.textSecondary),
-              const SizedBox(height: 12),
-              Text(message, textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -94,11 +94,20 @@ service cloud.firestore {
       }
     }
 
-    // /ratings/{ratingId}: calificaciones (spec M8, adelanto de reglas).
+    // /ratings/{ratingId}: calificaciones mutuas post-viaje (spec M8).
+    // - fromUserId debe ser el usuario autenticado (no impersonar).
+    // - fromUserId != toUserId (no auto-calificación).
+    // - stars en rango entero 1..5.
+    // Prevención de duplicados `(fromUserId, matchId)` queda client-side
+    // (ver yo-te-llevo-pending.md §M8): rules no permiten `query()`.
     match /ratings/{ratingId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
-        && request.resource.data.fromUserId == request.auth.uid;
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.fromUserId != request.resource.data.toUserId
+        && request.resource.data.stars is int
+        && request.resource.data.stars >= 1
+        && request.resource.data.stars <= 5;
       allow update, delete: if false;
     }
   }

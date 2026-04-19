@@ -83,6 +83,11 @@ app.*.map.json
 .env.*
 !.env.example
 
+# Firestore rules tests (Módulo 9)
+firestore-rules-tests/node_modules/
+firestore-rules-tests/lib/
+firestore-rules-tests/coverage/
+
 # Claude
 .claude/
 claude/
