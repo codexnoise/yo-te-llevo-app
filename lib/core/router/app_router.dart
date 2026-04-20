@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
+import '../../features/map/presentation/screens/home_map_screen.dart';
 import '../../features/matching/presentation/screens/match_results_screen.dart';
+import '../../features/matching/presentation/screens/search_trip_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/vehicle_setup_screen.dart';
 import '../../features/ratings/presentation/screens/rating_screen.dart';
@@ -14,25 +17,42 @@ import '../../features/routes/presentation/screens/create_route_screen.dart';
 import '../../features/routes/presentation/screens/driver_routes_screen.dart';
 import '../../features/trips/presentation/screens/trip_detail_screen.dart';
 import '../../features/trips/presentation/screens/trips_screen.dart';
-import '../theme/app_colors.dart';
 import 'go_router_refresh_stream.dart';
+
+/// Decide si una navegación debe ser redirigida por el guard de auth.
+/// Extraído como función pura para poder testearlo sin Firebase real.
+String? computeAuthRedirect({
+  required bool isLoggedIn,
+  required String location,
+}) {
+  final isPublicRoute = location == '/splash' ||
+      location == '/login' ||
+      location == '/register';
+
+  if (!isLoggedIn && !isPublicRoute) return '/login';
+  if (isLoggedIn && (location == '/login' || location == '/register')) {
+    return '/home';
+  }
+  if (isLoggedIn && location == '/splash') return '/home';
+  return null;
+}
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final firebaseAuth = ref.watch(firebaseAuthProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     refreshListenable: GoRouterRefreshStream(firebaseAuth.authStateChanges()),
-    redirect: (context, state) {
-      final isLoggedIn = firebaseAuth.currentUser != null;
-      final location = state.matchedLocation;
-      final isAuthRoute = location == '/login' || location == '/register';
-
-      if (!isLoggedIn && !isAuthRoute) return '/login';
-      if (isLoggedIn && isAuthRoute) return '/home';
-      return null;
-    },
+    redirect: (context, state) => computeAuthRedirect(
+      isLoggedIn: firebaseAuth.currentUser != null,
+      location: state.matchedLocation,
+    ),
     routes: [
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         name: 'login',
@@ -57,6 +77,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/driver-routes',
         name: 'driver-routes',
         builder: (context, state) => const DriverRoutesScreen(),
+      ),
+      GoRoute(
+        path: '/search',
+        name: 'search',
+        builder: (context, state) => const SearchTripScreen(),
       ),
       GoRoute(
         path: '/search/results',
@@ -94,7 +119,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/home',
             name: 'home',
-            builder: (context, state) => const _PlaceholderScreen(title: 'Mapa'),
+            builder: (context, state) => const HomeMapScreen(),
           ),
           GoRoute(
             path: '/trips',
@@ -153,29 +178,6 @@ class ScaffoldWithNavBar extends StatelessWidget {
       case 2:
         context.go('/profile');
     }
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.construction, size: 64, color: AppColors.textSecondary),
-            const SizedBox(height: 16),
-            Text('$title - En construcción', style: const TextStyle(fontSize: 18)),
-          ],
-        ),
-      ),
-    );
   }
 }
 
