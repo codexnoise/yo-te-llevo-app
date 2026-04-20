@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/utils/lat_lng.dart';
+import '../../domain/entities/geocoding_result.dart';
 
 class GeocodingResultModel extends Equatable {
   final String name;
@@ -27,6 +28,12 @@ class GeocodingResultModel extends Equatable {
       ),
     );
   }
+
+  GeocodingResult toEntity() => GeocodingResult(
+        name: name,
+        fullAddress: fullAddress,
+        coordinates: coordinates,
+      );
 
   @override
   List<Object> get props => [name, fullAddress, coordinates];

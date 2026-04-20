@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/utils/lat_lng.dart';
 import '../../../../core/utils/polyline_codec.dart';
+import '../../domain/entities/route_result.dart';
 
 class RouteResultModel extends Equatable {
   final String polylineEncoded;
@@ -29,6 +30,13 @@ class RouteResultModel extends Equatable {
       durationSeconds: duration,
     );
   }
+
+  RouteResult toEntity() => RouteResult(
+        polylineEncoded: polylineEncoded,
+        polylineDecoded: polylineDecoded,
+        distanceMeters: distanceMeters,
+        durationSeconds: durationSeconds,
+      );
 
   @override
   List<Object> get props => [
