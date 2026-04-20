@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../data/models/route_result_model.dart';
+import '../../domain/entities/route_result.dart';
 import '../../domain/helpers/route_format_helpers.dart';
 
 class RoutePreviewCard extends StatelessWidget {
-  final RouteResultModel routeResult;
+  final RouteResult routeResult;
   final String? originAddress;
   final String? destinationAddress;
 

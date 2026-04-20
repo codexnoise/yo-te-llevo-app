@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/lat_lng.dart';
-import '../../../routes/data/models/geocoding_result_model.dart';
+import '../../../routes/domain/entities/geocoding_result.dart';
 import '../../../routes/presentation/widgets/location_search_bar.dart';
 import '../../domain/entities/match_search_input.dart';
 import '../providers/matching_providers.dart';
@@ -29,8 +29,8 @@ class SearchTripScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchTripScreenState extends ConsumerState<SearchTripScreen> {
-  GeocodingResultModel? _origin;
-  GeocodingResultModel? _destination;
+  GeocodingResult? _origin;
+  GeocodingResult? _destination;
   final Set<String> _selectedDays = {};
   TimeOfDay? _departureTime;
 

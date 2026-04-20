@@ -4,13 +4,13 @@ import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/utils/lat_lng.dart';
+import '../../domain/entities/detour_result.dart';
+import '../../domain/entities/geocoding_result.dart';
+import '../../domain/entities/route_result.dart';
 import '../../domain/repositories/mapbox_repository.dart';
 import '../datasources/mapbox_directions_datasource.dart';
 import '../datasources/mapbox_geocoding_datasource.dart';
 import '../datasources/polyline_cache_datasource.dart';
-import '../models/detour_result_model.dart';
-import '../models/geocoding_result_model.dart';
-import '../models/route_result_model.dart';
 
 class MapboxRepositoryImpl implements MapboxRepository {
   final MapboxDirectionsDataSource _directionsDataSource;
@@ -29,7 +29,7 @@ class MapboxRepositoryImpl implements MapboxRepository {
         _networkInfo = networkInfo;
 
   @override
-  Future<Either<Failure, RouteResultModel>> getRoute(
+  Future<Either<Failure, RouteResult>> getRoute(
       List<LatLng> waypoints) async {
     if (!await _networkInfo.isConnected) {
       return const Left(
@@ -37,14 +37,14 @@ class MapboxRepositoryImpl implements MapboxRepository {
     }
     try {
       final result = await _directionsDataSource.getRoute(waypoints);
-      return Right(result);
+      return Right(result.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     }
   }
 
   @override
-  Future<Either<Failure, DetourResultModel>> calculateDetour({
+  Future<Either<Failure, DetourResult>> calculateDetour({
     required LatLng driverOrigin,
     required LatLng driverDestination,
     required LatLng passengerPickup,
@@ -59,7 +59,7 @@ class MapboxRepositoryImpl implements MapboxRepository {
       driverDestination,
     ]);
 
-    return detourResult.map((route) => DetourResultModel(
+    return detourResult.map((route) => DetourResult(
           extraSeconds: route.durationSeconds - originalDurationSeconds,
           extraMeters: route.distanceMeters - originalDistanceMeters,
           totalDurationSeconds: route.durationSeconds,
@@ -69,7 +69,7 @@ class MapboxRepositoryImpl implements MapboxRepository {
   }
 
   @override
-  Future<Either<Failure, List<GeocodingResultModel>>> search(
+  Future<Either<Failure, List<GeocodingResult>>> search(
     String query, {
     LatLng? proximity,
     String country = 'ec',
@@ -84,7 +84,7 @@ class MapboxRepositoryImpl implements MapboxRepository {
         proximity: proximity,
         country: country,
       );
-      return Right(results);
+      return Right(results.map((m) => m.toEntity()).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     }

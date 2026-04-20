@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../data/models/geocoding_result_model.dart';
+import '../../domain/entities/geocoding_result.dart';
 import '../providers/driver_route_providers.dart';
 
 class LocationSearchBar extends ConsumerStatefulWidget {
   final String label;
   final String? initialValue;
-  final ValueChanged<GeocodingResultModel> onResultSelected;
+  final ValueChanged<GeocodingResult> onResultSelected;
 
   const LocationSearchBar({
     super.key,

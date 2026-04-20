@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/utils/lat_lng.dart';
-import '../../data/models/route_result_model.dart';
 import '../../domain/entities/pricing_type.dart';
 import '../../domain/entities/route_pricing.dart';
+import '../../domain/entities/route_result.dart';
 import '../../domain/entities/route_schedule.dart';
 
 class CreateRouteState extends Equatable {
@@ -11,7 +11,7 @@ class CreateRouteState extends Equatable {
   final String? originAddress;
   final LatLng? destination;
   final String? destinationAddress;
-  final RouteResultModel? routeResult;
+  final RouteResult? routeResult;
   final RouteSchedule schedule;
   final RoutePricing pricing;
   final int availableSeats;
@@ -46,7 +46,7 @@ class CreateRouteState extends Equatable {
     String? Function()? originAddress,
     LatLng? Function()? destination,
     String? Function()? destinationAddress,
-    RouteResultModel? Function()? routeResult,
+    RouteResult? Function()? routeResult,
     RouteSchedule? schedule,
     RoutePricing? pricing,
     int? availableSeats,
