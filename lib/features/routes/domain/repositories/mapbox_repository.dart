@@ -2,14 +2,14 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/lat_lng.dart';
-import '../../data/models/detour_result_model.dart';
-import '../../data/models/geocoding_result_model.dart';
-import '../../data/models/route_result_model.dart';
+import '../entities/detour_result.dart';
+import '../entities/geocoding_result.dart';
+import '../entities/route_result.dart';
 
 abstract class MapboxRepository {
-  Future<Either<Failure, RouteResultModel>> getRoute(List<LatLng> waypoints);
+  Future<Either<Failure, RouteResult>> getRoute(List<LatLng> waypoints);
 
-  Future<Either<Failure, DetourResultModel>> calculateDetour({
+  Future<Either<Failure, DetourResult>> calculateDetour({
     required LatLng driverOrigin,
     required LatLng driverDestination,
     required LatLng passengerPickup,
@@ -18,7 +18,7 @@ abstract class MapboxRepository {
     required double originalDistanceMeters,
   });
 
-  Future<Either<Failure, List<GeocodingResultModel>>> search(
+  Future<Either<Failure, List<GeocodingResult>>> search(
     String query, {
     LatLng? proximity,
     String country,
