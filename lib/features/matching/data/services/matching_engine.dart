@@ -3,7 +3,7 @@ import '../../../../core/utils/haversine.dart';
 import '../../../../core/utils/lat_lng.dart';
 import '../../../../core/utils/polyline_codec.dart';
 import '../../../../core/utils/polyline_utils.dart';
-import '../../../routes/data/models/detour_result_model.dart';
+import '../../../routes/domain/entities/detour_result.dart';
 import '../../../routes/domain/entities/route_entity.dart';
 import '../../../routes/domain/repositories/driver_route_repository.dart';
 import '../../../routes/domain/repositories/mapbox_repository.dart';
@@ -154,7 +154,7 @@ class MatchingEngine {
       final pickupAddrEither = results[1] as dynamic;
       final dropoffAddrEither = results[2] as dynamic;
 
-      final detour = detourEither.fold((_) => null, (d) => d as DetourResultModel);
+      final detour = detourEither.fold((_) => null, (d) => d as DetourResult);
       if (detour == null) return null;
       if (detour.extraSeconds > AppConstants.maxDetourSeconds) return null;
 

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/geohash_utils.dart';
-import '../../data/models/geocoding_result_model.dart';
+import '../../domain/entities/geocoding_result.dart';
 import '../../domain/entities/route_entity.dart';
 import '../../domain/entities/route_pricing.dart';
 import '../../domain/entities/route_schedule.dart';
@@ -35,7 +35,7 @@ class CreateRouteNotifier extends StateNotifier<CreateRouteState> {
     if (state.canFetchRoute) _fetchRoute();
   }
 
-  void setOriginFromSearch(GeocodingResultModel result) {
+  void setOriginFromSearch(GeocodingResult result) {
     state = state.copyWith(
       origin: () => result.coordinates,
       originAddress: () => result.fullAddress,
@@ -56,7 +56,7 @@ class CreateRouteNotifier extends StateNotifier<CreateRouteState> {
     if (state.canFetchRoute) _fetchRoute();
   }
 
-  void setDestinationFromSearch(GeocodingResultModel result) {
+  void setDestinationFromSearch(GeocodingResult result) {
     state = state.copyWith(
       destination: () => result.coordinates,
       destinationAddress: () => result.fullAddress,

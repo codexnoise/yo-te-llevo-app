@@ -60,14 +60,14 @@ void main() {
   );
 
   group('getRoute', () {
-    test('returns RouteResultModel on success', () async {
+    test('returns RouteResult entity on success', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
       when(() => mockDirections.getRoute(testWaypoints))
           .thenAnswer((_) async => testRouteResult);
 
       final result = await repository.getRoute(testWaypoints);
 
-      expect(result, const Right(testRouteResult));
+      expect(result, Right(testRouteResult.toEntity()));
       verify(() => mockDirections.getRoute(testWaypoints)).called(1);
     });
 
@@ -101,7 +101,7 @@ void main() {
   });
 
   group('calculateDetour', () {
-    test('returns DetourResultModel with correct extra values', () async {
+    test('returns DetourResult entity with correct extra values', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
       when(() => mockDirections.getRoute(any()))
           .thenAnswer((_) async => testRouteResult);
@@ -122,7 +122,7 @@ void main() {
           expect(detour.extraMeters, 500); // 1500 - 1000
           expect(detour.totalDurationSeconds, 120);
           expect(detour.totalDistanceMeters, 1500);
-          expect(detour.fullRoute, testRouteResult);
+          expect(detour.fullRoute, testRouteResult.toEntity());
         },
       );
     });
@@ -137,7 +137,7 @@ void main() {
       ),
     ];
 
-    test('returns list on success', () async {
+    test('returns list of entities on success', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
       when(() => mockGeocoding.search(
             'Terminal',
@@ -147,7 +147,12 @@ void main() {
 
       final result = await repository.search('Terminal');
 
-      expect(result, const Right(testResults));
+      result.fold(
+        (failure) => fail('Should be Right: $failure'),
+        (entities) {
+          expect(entities, testResults.map((m) => m.toEntity()).toList());
+        },
+      );
     });
 
     test('returns NetworkFailure when offline', () async {

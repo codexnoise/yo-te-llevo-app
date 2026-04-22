@@ -7,9 +7,9 @@ import 'package:yo_te_llevo/core/utils/polyline_utils.dart';
 import 'package:yo_te_llevo/features/matching/data/services/matching_engine.dart';
 import 'package:yo_te_llevo/features/matching/domain/entities/match_candidate.dart';
 import 'package:yo_te_llevo/features/matching/domain/entities/match_search_input.dart';
-import 'package:yo_te_llevo/features/routes/data/models/detour_result_model.dart';
-import 'package:yo_te_llevo/features/routes/data/models/route_result_model.dart';
+import 'package:yo_te_llevo/features/routes/domain/entities/detour_result.dart';
 import 'package:yo_te_llevo/features/routes/domain/entities/pricing_type.dart';
+import 'package:yo_te_llevo/features/routes/domain/entities/route_result.dart';
 import 'package:yo_te_llevo/features/routes/domain/entities/route_entity.dart';
 import 'package:yo_te_llevo/features/routes/domain/entities/route_pricing.dart';
 import 'package:yo_te_llevo/features/routes/domain/entities/route_schedule.dart';
@@ -166,7 +166,7 @@ void main() {
     test('uses Mapbox fallback when no cache and no entity polyline',
         () async {
       when(() => mockMapboxRepo.getRoute(any())).thenAnswer(
-        (_) async => const Right(RouteResultModel(
+        (_) async => const Right(RouteResult(
           polylineEncoded: 'fallback',
           polylineDecoded: [
             LatLng(0, 0),
@@ -216,7 +216,7 @@ void main() {
     });
 
     test('builds MatchCandidate on success', () async {
-      const fullRoute = RouteResultModel(
+      const fullRoute = RouteResult(
         polylineEncoded: 'det',
         polylineDecoded: [LatLng(0, 0), LatLng(0, 0.03)],
         distanceMeters: 3400,
@@ -229,7 +229,7 @@ void main() {
             passengerDropoff: any(named: 'passengerDropoff'),
             originalDurationSeconds: any(named: 'originalDurationSeconds'),
             originalDistanceMeters: any(named: 'originalDistanceMeters'),
-          )).thenAnswer((_) async => const Right(DetourResultModel(
+          )).thenAnswer((_) async => const Right(DetourResult(
             extraSeconds: 100,
             extraMeters: 100,
             totalDurationSeconds: 400,
@@ -250,7 +250,7 @@ void main() {
     });
 
     test('discards candidate when detour exceeds max', () async {
-      const fullRoute = RouteResultModel(
+      const fullRoute = RouteResult(
         polylineEncoded: 'det',
         polylineDecoded: [],
         distanceMeters: 5000,
@@ -263,7 +263,7 @@ void main() {
             passengerDropoff: any(named: 'passengerDropoff'),
             originalDurationSeconds: any(named: 'originalDurationSeconds'),
             originalDistanceMeters: any(named: 'originalDistanceMeters'),
-          )).thenAnswer((_) async => const Right(DetourResultModel(
+          )).thenAnswer((_) async => const Right(DetourResult(
             extraSeconds: 900,
             extraMeters: 500,
             totalDurationSeconds: 1200,

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/providers/connectivity_provider.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../data/datasources/route_remote_datasource.dart';
-import '../../data/models/geocoding_result_model.dart';
 import '../../data/repositories/driver_route_repository_impl.dart';
+import '../../domain/entities/geocoding_result.dart';
 import '../../domain/entities/route_entity.dart';
 import '../../domain/repositories/driver_route_repository.dart';
 import 'create_route_notifier.dart';
@@ -49,13 +49,13 @@ final driverRoutesProvider = StateNotifierProvider.autoDispose<
 });
 
 final geocodingSearchProvider = FutureProvider.autoDispose
-    .family<List<GeocodingResultModel>, String>((ref, query) async {
+    .family<List<GeocodingResult>, String>((ref, query) async {
   if (query.trim().length < 3) return [];
 
   final repository = ref.watch(mapboxRepositoryProvider);
   final result = await repository.search(query);
   return result.fold(
-    (_) => <GeocodingResultModel>[],
+    (_) => <GeocodingResult>[],
     (results) => results,
   );
 });
