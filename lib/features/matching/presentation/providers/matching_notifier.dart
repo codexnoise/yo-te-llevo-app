@@ -18,6 +18,8 @@ class MatchingNotifier extends StateNotifier<MatchingState> {
 
     final result = await _repository.searchMatches(input);
 
+    if (!mounted) return;
+
     result.fold(
       (failure) => state = state.copyWith(
         isSearching: false,
