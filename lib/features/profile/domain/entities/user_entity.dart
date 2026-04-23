@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/constants/supported_cities.dart';
 import 'user_role.dart';
 
 class UserEntity extends Equatable {
@@ -13,6 +14,7 @@ class UserEntity extends Equatable {
   final int totalTrips;
   final DateTime createdAt;
   final String? fcmToken;
+  final String city;
 
   const UserEntity({
     required this.id,
@@ -25,6 +27,7 @@ class UserEntity extends Equatable {
     this.rating = 5.0,
     this.totalTrips = 0,
     this.fcmToken,
+    this.city = SupportedCities.defaultCity,
   });
 
   bool get isDriver => role == UserRole.driver || role == UserRole.both;
@@ -42,6 +45,7 @@ class UserEntity extends Equatable {
     int? totalTrips,
     DateTime? createdAt,
     String? fcmToken,
+    String? city,
   }) {
     return UserEntity(
       id: id ?? this.id,
@@ -54,6 +58,7 @@ class UserEntity extends Equatable {
       totalTrips: totalTrips ?? this.totalTrips,
       createdAt: createdAt ?? this.createdAt,
       fcmToken: fcmToken ?? this.fcmToken,
+      city: city ?? this.city,
     );
   }
 
@@ -69,5 +74,6 @@ class UserEntity extends Equatable {
         totalTrips,
         createdAt,
         fcmToken,
+        city,
       ];
 }

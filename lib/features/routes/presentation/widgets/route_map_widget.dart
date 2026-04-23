@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mapbox;
 
+import '../../../../core/constants/supported_cities.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/lat_lng.dart';
 import '../providers/create_route_state.dart';
@@ -22,9 +23,12 @@ class _RouteMapWidgetState extends ConsumerState<RouteMapWidget> {
   mapbox.PointAnnotationManager? _pointManager;
   MapSelectionMode _selectionMode = MapSelectionMode.origin;
 
-  // Default center: Ecuador
+  // Centro por defecto: Cuenca, Ecuador (desde SupportedCities).
   static final _defaultCenter = mapbox.Point(
-    coordinates: mapbox.Position(-78.4678, -0.1807),
+    coordinates: mapbox.Position(
+      SupportedCities.cuencaCenterLon,
+      SupportedCities.cuencaCenterLat,
+    ),
   );
 
   @override
@@ -49,7 +53,7 @@ class _RouteMapWidgetState extends ConsumerState<RouteMapWidget> {
             child: mapbox.MapWidget(
               cameraOptions: mapbox.CameraOptions(
                 center: _defaultCenter,
-                zoom: 12,
+                zoom: SupportedCities.cuencaDefaultZoom,
               ),
               onMapCreated: _onMapCreated,
               onTapListener: _onMapTap,

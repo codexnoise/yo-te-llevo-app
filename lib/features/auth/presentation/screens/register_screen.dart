@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/supported_cities.dart';
 import '../../../profile/domain/entities/user_entity.dart';
 import '../../../profile/domain/entities/user_role.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
@@ -84,6 +85,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           : _phoneController.text.trim(),
       role: _role,
       createdAt: DateTime.now(),
+      city: SupportedCities.defaultCity,
     );
 
     final profileResult =
@@ -122,6 +124,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Por ahora Yo Te Llevo solo está disponible en Cuenca.',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _nameController,
                   textInputAction: TextInputAction.next,
@@ -166,6 +201,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Teléfono (opcional)',
                     prefixIcon: Icon(Icons.phone_outlined),
                     border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  initialValue: SupportedCities.defaultCity,
+                  readOnly: true,
+                  enabled: false,
+                  decoration: const InputDecoration(
+                    labelText: 'Ciudad',
+                    prefixIcon: Icon(Icons.location_city_outlined),
+                    border: OutlineInputBorder(),
+                    helperText: 'Disponible solo en Cuenca por el momento',
                   ),
                 ),
                 const SizedBox(height: 24),

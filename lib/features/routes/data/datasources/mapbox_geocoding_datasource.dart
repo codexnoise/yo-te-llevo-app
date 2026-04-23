@@ -1,4 +1,5 @@
 import '../../../../core/constants/mapbox_constants.dart';
+import '../../../../core/constants/supported_cities.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/utils/lat_lng.dart';
@@ -20,11 +21,15 @@ class MapboxGeocodingDataSource {
       'limit': '5',
       'language': MapboxConstants.language,
       'country': country,
+      'types': SupportedCities.searchTypes,
+      'bbox': SupportedCities.cuencaBbox.join(','),
     };
 
-    if (proximity != null) {
-      queryParams['proximity'] = '${proximity.longitude},${proximity.latitude}';
-    }
+    final proximityLon =
+        proximity?.longitude ?? SupportedCities.cuencaCenterLon;
+    final proximityLat =
+        proximity?.latitude ?? SupportedCities.cuencaCenterLat;
+    queryParams['proximity'] = '$proximityLon,$proximityLat';
 
     try {
       final response = await _client.get(
