@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mapbox;
 
+import '../../../../core/constants/supported_cities.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../routes/domain/entities/route_entity.dart';
@@ -20,9 +21,12 @@ class _HomeMapScreenState extends ConsumerState<HomeMapScreen> {
   mapbox.PolylineAnnotationManager? _polylineManager;
   List<RouteEntity> _lastPaintedRoutes = const [];
 
-  // Centro por defecto: Cuenca, Ecuador.
+  // Centro por defecto: Cuenca, Ecuador (desde SupportedCities).
   static final _defaultCenter = mapbox.Point(
-    coordinates: mapbox.Position(-79.0045, -2.9001),
+    coordinates: mapbox.Position(
+      SupportedCities.cuencaCenterLon,
+      SupportedCities.cuencaCenterLat,
+    ),
   );
 
   @override
@@ -45,7 +49,7 @@ class _HomeMapScreenState extends ConsumerState<HomeMapScreen> {
           mapbox.MapWidget(
             cameraOptions: mapbox.CameraOptions(
               center: _defaultCenter,
-              zoom: 12,
+              zoom: SupportedCities.cuencaDefaultZoom,
             ),
             onMapCreated: _onMapCreated,
           ),

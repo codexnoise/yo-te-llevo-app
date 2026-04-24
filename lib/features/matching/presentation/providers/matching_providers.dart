@@ -24,6 +24,6 @@ final matchingRepositoryProvider = Provider<MatchingRepository>((ref) {
 });
 
 final matchingNotifierProvider =
-    StateNotifierProvider.autoDispose<MatchingNotifier, MatchingState>((ref) {
+    StateNotifierProvider<MatchingNotifier, MatchingState>((ref) {
   return MatchingNotifier(ref.watch(matchingRepositoryProvider));
 });

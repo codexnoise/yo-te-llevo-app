@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../../core/constants/supported_cities.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/entities/user_role.dart';
 
@@ -13,6 +14,7 @@ class UserModel extends UserEntity {
   static const String fTotalTrips = 'totalTrips';
   static const String fCreatedAt = 'createdAt';
   static const String fFcmToken = 'fcmToken';
+  static const String fCity = 'city';
 
   const UserModel({
     required super.id,
@@ -25,6 +27,7 @@ class UserModel extends UserEntity {
     super.rating = 5.0,
     super.totalTrips = 0,
     super.fcmToken,
+    super.city = SupportedCities.defaultCity,
   });
 
   factory UserModel.fromEntity(UserEntity entity) {
@@ -39,6 +42,7 @@ class UserModel extends UserEntity {
       rating: entity.rating,
       totalTrips: entity.totalTrips,
       fcmToken: entity.fcmToken,
+      city: entity.city,
     );
   }
 
@@ -54,6 +58,7 @@ class UserModel extends UserEntity {
       rating: rating,
       totalTrips: totalTrips,
       fcmToken: fcmToken,
+      city: city,
     );
   }
 
@@ -82,6 +87,7 @@ class UserModel extends UserEntity {
       totalTrips: (data[fTotalTrips] as num?)?.toInt() ?? 0,
       createdAt: createdAt,
       fcmToken: data[fFcmToken] as String?,
+      city: data[fCity] as String? ?? SupportedCities.defaultCity,
     );
   }
 
@@ -100,6 +106,7 @@ class UserModel extends UserEntity {
       fCreatedAt:
           useServerTimestamp ? FieldValue.serverTimestamp() : Timestamp.fromDate(createdAt),
       fFcmToken: fcmToken,
+      fCity: city,
     };
   }
 }
