@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../../matching/domain/entities/match.dart';
 import '../../../matching/domain/entities/match_candidate.dart';
 import '../../../matching/domain/entities/match_status.dart';
 import '../entities/trip.dart';
@@ -8,9 +9,14 @@ import '../entities/trip.dart';
 abstract class TripRepository {
   /// Crea un match con status pending a partir del [candidate] elegido por el
   /// pasajero. Retorna el [TripEntity] enriquecido con contraparte y ruta.
+  ///
+  /// [tripType] determina si el match es `oneTime` (un único viaje) o
+  /// `recurring` (serie semanal). El caller debe pasarlo explícitamente —
+  /// el default es `oneTime` para evitar contaminar tests legacy.
   Future<Either<Failure, TripEntity>> requestTrip({
     required MatchCandidate candidate,
     required String passengerId,
+    MatchTripType tripType = MatchTripType.oneTime,
   });
 
   /// El conductor responde una solicitud pending con [decision] ∈

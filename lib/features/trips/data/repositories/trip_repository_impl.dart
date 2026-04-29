@@ -37,6 +37,7 @@ class TripRepositoryImpl implements TripRepository {
   Future<Either<Failure, TripEntity>> requestTrip({
     required MatchCandidate candidate,
     required String passengerId,
+    MatchTripType tripType = MatchTripType.oneTime,
   }) async {
     if (!await _networkInfo.isConnected) {
       return const Left(NetworkFailure(message: 'Sin conexión a internet'));
@@ -55,7 +56,7 @@ class TripRepositoryImpl implements TripRepository {
         distanceToPickupMeters: candidate.distanceToPickupMeters,
         distanceToDropoffMeters: candidate.distanceToDropoffMeters,
         detourSeconds: candidate.detourSeconds,
-        tripType: MatchTripType.recurring,
+        tripType: tripType,
         days: candidate.route.schedule.days,
         startDate: null,
         price: candidate.price,
