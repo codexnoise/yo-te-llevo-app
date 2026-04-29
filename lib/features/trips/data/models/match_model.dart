@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/utils/lat_lng.dart';
 import '../../../matching/domain/entities/match.dart';
 import '../../../matching/domain/entities/match_status.dart';
+import '../../domain/entities/match_series_status.dart';
 
 /// Serialización Firestore para un [Match] en `/matches/{matchId}`.
 ///
@@ -30,8 +31,17 @@ class MatchModel {
   static const String fScheduleType = 'type';
   static const String fScheduleDays = 'days';
   static const String fScheduleStartDate = 'startDate';
+  static const String fScheduleDepartureTime = 'departureTime';
+  static const String fScheduleEndDate = 'endDate';
+  static const String fScheduleTimezone = 'timezone';
   static const String fPricingType = 'type';
   static const String fPricingAmount = 'amount';
+
+  // Campos de recurrencia v1 — viven al nivel raíz del doc para no anidar
+  // demasiado y facilitar índices Firestore.
+  static const String fSeriesStatus = 'seriesStatus';
+  static const String fNextOccurrenceAt = 'nextOccurrenceAt';
+  static const String fLastOccurrenceAt = 'lastOccurrenceAt';
 
   const MatchModel();
 
@@ -72,10 +82,16 @@ class MatchModel {
       detourSeconds: (data[fDetourDuration] as num?)?.toDouble() ?? 0,
       tripType: _parseTripType(schedule[fScheduleType] as String?),
       days: _parseDays(schedule[fScheduleDays]),
-      startDate: _parseStartDate(schedule[fScheduleStartDate]),
+      startDate: _parseTimestamp(schedule[fScheduleStartDate]),
+      endDate: _parseTimestamp(schedule[fScheduleEndDate]),
+      departureTime: schedule[fScheduleDepartureTime] as String?,
+      timezone: (schedule[fScheduleTimezone] as String?) ?? 'America/Guayaquil',
       price: (pricing[fPricingAmount] as num?)?.toDouble() ?? 0,
       pricingType: (pricing[fPricingType] as String?) ?? 'perTrip',
       createdAt: _parseTimestamp(data[fCreatedAt]) ?? DateTime.now(),
+      seriesStatus: _parseSeriesStatus(data[fSeriesStatus] as String?),
+      nextOccurrenceAt: _parseTimestamp(data[fNextOccurrenceAt]),
+      lastOccurrenceAt: _parseTimestamp(data[fLastOccurrenceAt]),
     );
   }
 
@@ -96,17 +112,16 @@ class MatchModel {
       fDistanceToPickup: match.distanceToPickupMeters,
       fDistanceToDropoff: match.distanceToDropoffMeters,
       fDetourDuration: match.detourSeconds,
-      fSchedule: {
-        fScheduleType: match.tripType.name,
-        fScheduleDays: match.days,
-        fScheduleStartDate: match.startDate != null
-            ? Timestamp.fromDate(match.startDate!)
-            : null,
-      },
+      fSchedule: _scheduleMap(match),
       fPricing: {
         fPricingType: match.pricingType,
         fPricingAmount: match.price,
       },
+      if (match.seriesStatus != null) fSeriesStatus: match.seriesStatus!.name,
+      if (match.nextOccurrenceAt != null)
+        fNextOccurrenceAt: Timestamp.fromDate(match.nextOccurrenceAt!),
+      if (match.lastOccurrenceAt != null)
+        fLastOccurrenceAt: Timestamp.fromDate(match.lastOccurrenceAt!),
       fCreatedAt: FieldValue.serverTimestamp(),
       fUpdatedAt: FieldValue.serverTimestamp(),
     };
@@ -129,19 +144,33 @@ class MatchModel {
       fDistanceToPickup: match.distanceToPickupMeters,
       fDistanceToDropoff: match.distanceToDropoffMeters,
       fDetourDuration: match.detourSeconds,
-      fSchedule: {
-        fScheduleType: match.tripType.name,
-        fScheduleDays: match.days,
-        fScheduleStartDate: match.startDate != null
-            ? Timestamp.fromDate(match.startDate!)
-            : null,
-      },
+      fSchedule: _scheduleMap(match),
       fPricing: {
         fPricingType: match.pricingType,
         fPricingAmount: match.price,
       },
+      if (match.seriesStatus != null) fSeriesStatus: match.seriesStatus!.name,
+      if (match.nextOccurrenceAt != null)
+        fNextOccurrenceAt: Timestamp.fromDate(match.nextOccurrenceAt!),
+      if (match.lastOccurrenceAt != null)
+        fLastOccurrenceAt: Timestamp.fromDate(match.lastOccurrenceAt!),
       fCreatedAt: Timestamp.fromDate(match.createdAt),
       fUpdatedAt: Timestamp.fromDate(match.createdAt),
+    };
+  }
+
+  static Map<String, dynamic> _scheduleMap(Match match) {
+    return {
+      fScheduleType: match.tripType.name,
+      fScheduleDays: match.days,
+      fScheduleStartDate: match.startDate != null
+          ? Timestamp.fromDate(match.startDate!)
+          : null,
+      if (match.endDate != null)
+        fScheduleEndDate: Timestamp.fromDate(match.endDate!),
+      if (match.departureTime != null)
+        fScheduleDepartureTime: match.departureTime,
+      fScheduleTimezone: match.timezone,
     };
   }
 
@@ -155,6 +184,11 @@ class MatchModel {
     }
   }
 
+  static MatchSeriesStatus? _parseSeriesStatus(String? raw) {
+    if (raw == null) return null;
+    return MatchSeriesStatus.fromString(raw);
+  }
+
   static List<String> _parseDays(Object? raw) {
     if (raw is List) {
       return raw.map((e) => e.toString()).toList();
@@ -162,14 +196,9 @@ class MatchModel {
     return const [];
   }
 
-  static DateTime? _parseStartDate(Object? raw) {
-    if (raw is Timestamp) return raw.toDate();
-    if (raw is String) return DateTime.tryParse(raw);
-    return null;
-  }
-
   static DateTime? _parseTimestamp(Object? raw) {
     if (raw is Timestamp) return raw.toDate();
+    if (raw is String) return DateTime.tryParse(raw);
     return null;
   }
 }
