@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../../matching/domain/entities/match.dart';
 import '../../../matching/domain/entities/match_candidate.dart';
 import '../../../matching/domain/entities/match_status.dart';
 import '../../domain/entities/trip.dart';
@@ -19,11 +20,13 @@ class TripsNotifier extends StateNotifier<AsyncValue<void>> {
   Future<TripEntity?> requestTrip({
     required MatchCandidate candidate,
     required String passengerId,
+    MatchTripType tripType = MatchTripType.oneTime,
   }) async {
     state = const AsyncValue.loading();
     final result = await _repository.requestTrip(
       candidate: candidate,
       passengerId: passengerId,
+      tripType: tripType,
     );
     return result.fold<TripEntity?>(
       (failure) {

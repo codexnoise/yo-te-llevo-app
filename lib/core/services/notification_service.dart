@@ -183,10 +183,26 @@ class NotificationService {
   void _navigateFromData(Map<String, dynamic> data) {
     final router = _router;
     if (router == null) return;
+    final type = data['type'];
     final matchId = data['matchId'];
+    final occurrenceId = data['occurrenceId'];
+
+    // Push de viajes recurrentes (M3+) — llevamos al detalle de la
+    // ocurrencia o a la administración de la serie.
+    if (type is String) {
+      if (type.startsWith('occurrence_') && occurrenceId is String &&
+          occurrenceId.isNotEmpty) {
+        router.go('/occurrences/$occurrenceId');
+        return;
+      }
+      if (type.startsWith('series_') && matchId is String && matchId.isNotEmpty) {
+        router.go('/series/$matchId');
+        return;
+      }
+    }
+
     if (matchId is! String || matchId.isEmpty) return;
 
-    final type = data['type'];
     if (type == 'chat_message') {
       router.go('/trips/$matchId/chat');
     } else {

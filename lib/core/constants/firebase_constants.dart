@@ -6,6 +6,7 @@ class FirebaseConstants {
   static const String routesCollection = 'routes';
   static const String matchesCollection = 'matches';
   static const String ratingsCollection = 'ratings';
+  static const String tripOccurrencesCollection = 'trip_occurrences';
 
   // Subcollections
   static const String vehicleSubcollection = 'vehicle';

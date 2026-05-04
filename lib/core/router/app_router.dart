@@ -15,8 +15,11 @@ import '../../features/profile/presentation/screens/vehicle_setup_screen.dart';
 import '../../features/ratings/presentation/screens/rating_screen.dart';
 import '../../features/routes/presentation/screens/create_route_screen.dart';
 import '../../features/routes/presentation/screens/driver_routes_screen.dart';
+import '../../features/trips/presentation/screens/occurrence_details_screen.dart';
+import '../../features/trips/presentation/screens/series_management_screen.dart';
 import '../../features/trips/presentation/screens/trip_detail_screen.dart';
 import '../../features/trips/presentation/screens/trips_screen.dart';
+import '../../features/trips/presentation/screens/upcoming_trips_screen.dart';
 import 'go_router_refresh_stream.dart';
 
 /// Decide si una navegación debe ser redirigida por el guard de auth.
@@ -112,6 +115,31 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           matchId: state.pathParameters['matchId']!,
           toUserId: state.pathParameters['toUserId']!,
         ),
+      ),
+      // Detalle de una ocurrencia recurrente / único viaje (spec viajes
+      // recurrentes §6.3). Coexiste con `/trips/:matchId` mientras dure la
+      // migración entre `Match.status` y `TripOccurrence.status`.
+      GoRoute(
+        path: '/occurrences/:id',
+        name: 'occurrence-detail',
+        builder: (context, state) => OccurrenceDetailsScreen(
+          occurrenceId: state.pathParameters['id']!,
+        ),
+      ),
+      // Administración de la serie (driver-only): pausar/reanudar/cancelar.
+      GoRoute(
+        path: '/series/:matchId',
+        name: 'series-management',
+        builder: (context, state) => SeriesManagementScreen(
+          matchId: state.pathParameters['matchId']!,
+        ),
+      ),
+      // Atajo opcional al listado de próximas ocurrencias (spec viajes
+      // recurrentes §6.3). Útil para deep-links de notificaciones futuras.
+      GoRoute(
+        path: '/upcoming',
+        name: 'upcoming',
+        builder: (context, state) => const UpcomingTripsScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => ScaffoldWithNavBar(child: child),

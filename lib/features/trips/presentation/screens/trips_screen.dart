@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/config/feature_flags.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../domain/entities/occurrence_status.dart';
 import '../../domain/entities/trip.dart';
+import '../../domain/entities/trip_occurrence.dart';
+import '../providers/trip_occurrence_providers.dart';
 import '../providers/trips_providers.dart';
 import '../widgets/trip_card.dart';
 
@@ -41,6 +46,18 @@ class _ActiveTripsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final flagAsync = ref.watch(recurringTripsEnabledProvider);
+    final flagOn = flagAsync.valueOrNull ?? false;
+    return flagOn ? const _UpcomingOccurrencesTab() : const _LegacyActiveTab();
+  }
+}
+
+/// Versión legacy basada en `Match.status` (pre viajes recurrentes).
+class _LegacyActiveTab extends ConsumerWidget {
+  const _LegacyActiveTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider).valueOrNull;
     final async = ref.watch(activeTripsStreamProvider);
 
@@ -72,6 +89,91 @@ class _ActiveTripsTab extends ConsumerWidget {
       viewerId: userId ?? '',
       onTap: () => context.go('/trips/${trip.id}'),
     );
+  }
+}
+
+/// Versión nueva: lista de `TripOccurrence` futuras.
+class _UpcomingOccurrencesTab extends ConsumerWidget {
+  const _UpcomingOccurrencesTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider).valueOrNull;
+    final async = ref.watch(upcomingOccurrencesProvider);
+
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => _ErrorView(message: err.toString()),
+      data: (list) {
+        if (list.isEmpty) {
+          return const _EmptyView(
+            icon: Icons.event_available,
+            message: 'No tienes viajes programados',
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: () async =>
+              ref.invalidate(upcomingOccurrencesProvider),
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: list.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 4),
+            itemBuilder: (_, i) => _OccurrenceTile(
+              o: list[i],
+              viewerId: user?.id ?? '',
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _OccurrenceTile extends ConsumerWidget {
+  final TripOccurrence o;
+  final String viewerId;
+  const _OccurrenceTile({required this.o, required this.viewerId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPassenger = o.isPassengerView(viewerId);
+    final dateLabel = _relativeDate(o.scheduledAt.toLocal());
+    final time = DateFormat.Hm().format(o.scheduledAt.toLocal());
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+        onTap: () => context.push('/occurrences/${o.id}'),
+        leading: CircleAvatar(
+          backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+          child: Icon(
+            isPassenger ? Icons.directions_car : Icons.person,
+            color: AppColors.primary,
+          ),
+        ),
+        title: Text('$dateLabel · $time',
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(_statusLabel(o.status),
+            style: const TextStyle(fontSize: 12)),
+      ),
+    );
+  }
+
+  String _statusLabel(OccurrenceStatus s) => switch (s) {
+        OccurrenceStatus.scheduled => 'Programado',
+        OccurrenceStatus.active => 'En curso',
+        OccurrenceStatus.completed => 'Completado',
+        OccurrenceStatus.cancelled => 'Cancelado',
+        OccurrenceStatus.noShow => 'No-show',
+      };
+
+  static String _relativeDate(DateTime local) {
+    final today = DateTime.now();
+    final tomorrow = today.add(const Duration(days: 1));
+    bool sameDay(DateTime a, DateTime b) =>
+        a.year == b.year && a.month == b.month && a.day == b.day;
+    if (sameDay(local, today)) return 'Hoy';
+    if (sameDay(local, tomorrow)) return 'Mañana';
+    return DateFormat('EEE d MMM', 'es').format(local);
   }
 }
 

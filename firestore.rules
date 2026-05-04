@@ -94,6 +94,56 @@ service cloud.firestore {
       }
     }
 
+    // /trip_occurrences/{occurrenceId}: ocurrencias concretas de viajes
+    // (spec viajes recurrentes §3.2). Cada doc representa "un viaje en una
+    // fecha específica". Para `tripType=oneTime` existe siempre 1 doc.
+    function isOccurrenceParticipant(occurrenceData) {
+      return isSignedIn()
+        && (request.auth.uid == occurrenceData.passengerId
+            || request.auth.uid == occurrenceData.driverId);
+    }
+
+    function isValidOccurrenceStatus(s) {
+      return s in ['scheduled','active','completed','cancelled','noShow','no_show'];
+    }
+
+    function isAllowedOccurrenceTransition(from, to) {
+      return (from == 'scheduled' && to in ['active','cancelled','noShow','no_show'])
+          || (from == 'active' && to in ['completed','cancelled'])
+          || (from == to);
+    }
+
+    function occurrenceImmutableFieldsUnchanged() {
+      return request.resource.data.matchId == resource.data.matchId
+          && request.resource.data.passengerId == resource.data.passengerId
+          && request.resource.data.driverId == resource.data.driverId
+          && request.resource.data.routeId == resource.data.routeId
+          && request.resource.data.scheduledAt == resource.data.scheduledAt
+          && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    match /trip_occurrences/{occurrenceId} {
+      allow read: if isOccurrenceParticipant(resource.data);
+
+      // Mientras no exista la Cloud Function `onMatchAccepted` (M3 del
+      // roadmap de viajes recurrentes), permitimos al cliente crear
+      // ocurrencias para los matches en los que participa. Cuando la CF
+      // entre en producción, este `allow create` debe cerrarse a `false`
+      // y la creación se delega 100% al Admin SDK.
+      allow create: if isSignedIn()
+        && (request.auth.uid == request.resource.data.passengerId
+            || request.auth.uid == request.resource.data.driverId)
+        && isValidOccurrenceStatus(request.resource.data.status);
+
+      allow update: if isOccurrenceParticipant(resource.data)
+        && occurrenceImmutableFieldsUnchanged()
+        && isValidOccurrenceStatus(request.resource.data.status)
+        && isAllowedOccurrenceTransition(
+            resource.data.status, request.resource.data.status);
+
+      allow delete: if false;
+    }
+
     // /ratings/{ratingId}: calificaciones mutuas post-viaje (spec M8).
     // - fromUserId debe ser el usuario autenticado (no impersonar).
     // - fromUserId != toUserId (no auto-calificación).
