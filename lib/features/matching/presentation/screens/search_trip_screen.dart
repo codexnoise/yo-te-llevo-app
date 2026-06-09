@@ -8,7 +8,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/lat_lng.dart';
 import '../../../routes/domain/entities/geocoding_result.dart';
 import '../../../routes/presentation/widgets/location_search_bar.dart';
+import '../../domain/entities/match.dart';
 import '../../domain/entities/match_search_input.dart';
+import '../../domain/entities/recurrence_duration.dart';
 import '../providers/matching_providers.dart';
 
 const _weekDays = <_WeekDay>[
@@ -33,6 +35,8 @@ class _SearchTripScreenState extends ConsumerState<SearchTripScreen> {
   GeocodingResult? _destination;
   final Set<String> _selectedDays = {};
   TimeOfDay? _departureTime;
+  bool _isRecurring = false;
+  RecurrenceDuration _duration = RecurrenceDuration.defaultValue;
 
   bool get _canSubmit =>
       _origin != null && _destination != null && _selectedDays.isNotEmpty;
@@ -53,6 +57,9 @@ class _SearchTripScreenState extends ConsumerState<SearchTripScreen> {
   Future<void> _submit() async {
     if (!_canSubmit) return;
 
+    final endDate =
+        _isRecurring ? DateTime.now().add(_duration.value) : null;
+
     final input = MatchSearchInput(
       origin: LatLng(
         _origin!.coordinates.latitude,
@@ -65,6 +72,9 @@ class _SearchTripScreenState extends ConsumerState<SearchTripScreen> {
       days: _selectedDays.toList(),
       departureTime:
           _departureTime != null ? _formatTime(_departureTime!) : null,
+      tripType:
+          _isRecurring ? MatchTripType.recurring : MatchTripType.oneTime,
+      endDate: endDate,
     );
 
     // Arrancamos la búsqueda sin await — MatchResultsScreen muestra el
@@ -142,6 +152,35 @@ class _SearchTripScreenState extends ConsumerState<SearchTripScreen> {
                 TextButton(
                   onPressed: () => setState(() => _departureTime = null),
                   child: const Text('Quitar hora'),
+                ),
+              ],
+              const SizedBox(height: 24),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Viaje recurrente'),
+                subtitle: const Text(
+                  'Suscribirse a esta ruta por varias semanas',
+                ),
+                value: _isRecurring,
+                onChanged: (v) => setState(() => _isRecurring = v),
+              ),
+              if (_isRecurring) ...[
+                const SizedBox(height: 8),
+                DropdownButtonFormField<RecurrenceDuration>(
+                  initialValue: _duration,
+                  decoration: const InputDecoration(
+                    labelText: 'Duración',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: RecurrenceDuration.values
+                      .map((d) => DropdownMenuItem(
+                            value: d,
+                            child: Text(d.label),
+                          ))
+                      .toList(),
+                  onChanged: (v) {
+                    if (v != null) setState(() => _duration = v);
+                  },
                 ),
               ],
               const SizedBox(height: 32),

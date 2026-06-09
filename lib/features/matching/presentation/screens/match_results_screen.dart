@@ -7,6 +7,7 @@ import '../../../profile/domain/entities/user_entity.dart';
 import '../../../profile/domain/repositories/profile_repository.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../trips/presentation/providers/trips_providers.dart';
+import '../../domain/entities/match.dart';
 import '../../domain/entities/match_candidate.dart';
 import '../providers/matching_providers.dart';
 import '../providers/matching_state.dart';
@@ -121,10 +122,14 @@ class MatchResultsScreen extends ConsumerWidget {
     MatchCandidate candidate,
     String passengerId,
   ) async {
+    final input = ref.read(matchingNotifierProvider).lastInput;
     final notifier = ref.read(tripsNotifierProvider.notifier);
     final trip = await notifier.requestTrip(
       candidate: candidate,
       passengerId: passengerId,
+      tripType: input?.tripType ?? MatchTripType.oneTime,
+      selectedDays: input?.days,
+      endDate: input?.endDate,
     );
     if (!context.mounted) return;
     if (trip != null) {

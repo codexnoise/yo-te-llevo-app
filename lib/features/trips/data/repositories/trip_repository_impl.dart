@@ -10,6 +10,7 @@ import '../../../profile/domain/entities/user_entity.dart';
 import '../../../profile/domain/repositories/profile_repository.dart';
 import '../../../routes/domain/entities/route_entity.dart';
 import '../../../routes/domain/repositories/driver_route_repository.dart';
+import '../../domain/entities/match_series_status.dart';
 import '../../domain/entities/trip.dart';
 import '../../domain/repositories/trip_repository.dart';
 import '../datasources/trip_remote_datasource.dart';
@@ -38,11 +39,14 @@ class TripRepositoryImpl implements TripRepository {
     required MatchCandidate candidate,
     required String passengerId,
     MatchTripType tripType = MatchTripType.oneTime,
+    List<String>? selectedDays,
+    DateTime? endDate,
   }) async {
     if (!await _networkInfo.isConnected) {
       return const Left(NetworkFailure(message: 'Sin conexión a internet'));
     }
     try {
+      final isRecurring = tripType == MatchTripType.recurring;
       final draft = Match(
         id: '',
         passengerId: passengerId,
@@ -57,8 +61,11 @@ class TripRepositoryImpl implements TripRepository {
         distanceToDropoffMeters: candidate.distanceToDropoffMeters,
         detourSeconds: candidate.detourSeconds,
         tripType: tripType,
-        days: candidate.route.schedule.days,
+        days: selectedDays ?? candidate.route.schedule.days,
         startDate: null,
+        endDate: endDate,
+        departureTime: candidate.route.schedule.departureTime,
+        seriesStatus: isRecurring ? MatchSeriesStatus.draft : null,
         price: candidate.price,
         pricingType: candidate.pricingType.name,
         createdAt: DateTime.now(),

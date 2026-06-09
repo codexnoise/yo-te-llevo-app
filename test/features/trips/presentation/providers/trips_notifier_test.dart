@@ -12,10 +12,15 @@ import 'package:yo_te_llevo/features/routes/domain/entities/route_entity.dart';
 import 'package:yo_te_llevo/features/routes/domain/entities/route_pricing.dart';
 import 'package:yo_te_llevo/features/routes/domain/entities/route_schedule.dart';
 import 'package:yo_te_llevo/features/trips/domain/entities/trip.dart';
+import 'package:yo_te_llevo/features/trips/domain/entities/trip_occurrence.dart';
+import 'package:yo_te_llevo/features/trips/domain/repositories/trip_occurrence_repository.dart';
 import 'package:yo_te_llevo/features/trips/domain/repositories/trip_repository.dart';
 import 'package:yo_te_llevo/features/trips/presentation/providers/trips_notifier.dart';
 
 class MockTripRepository extends Mock implements TripRepository {}
+
+class MockTripOccurrenceRepository extends Mock
+    implements TripOccurrenceRepository {}
 
 class _FakeCandidate extends Fake implements MatchCandidate {}
 
@@ -54,7 +59,11 @@ MatchCandidate _candidate() => MatchCandidate(
       pricingType: PricingType.perTrip,
     );
 
-Match _match({MatchStatus status = MatchStatus.pending}) => Match(
+Match _match({
+  MatchStatus status = MatchStatus.pending,
+  MatchTripType tripType = MatchTripType.recurring,
+}) =>
+    Match(
       id: 'm1',
       passengerId: 'p1',
       driverId: 'd1',
@@ -67,7 +76,7 @@ Match _match({MatchStatus status = MatchStatus.pending}) => Match(
       distanceToPickupMeters: 100,
       distanceToDropoffMeters: 100,
       detourSeconds: 60,
-      tripType: MatchTripType.recurring,
+      tripType: tripType,
       days: const ['mon'],
       startDate: null,
       price: 2.0,
@@ -77,16 +86,19 @@ Match _match({MatchStatus status = MatchStatus.pending}) => Match(
 
 void main() {
   late MockTripRepository repo;
+  late MockTripOccurrenceRepository occRepo;
   late TripsNotifier notifier;
 
   setUpAll(() {
     registerFallbackValue(_FakeCandidate());
     registerFallbackValue(MatchStatus.pending);
+    registerFallbackValue(MatchTripType.oneTime);
   });
 
   setUp(() {
     repo = MockTripRepository();
-    notifier = TripsNotifier(repo);
+    occRepo = MockTripOccurrenceRepository();
+    notifier = TripsNotifier(repo, occRepo);
   });
 
   group('requestTrip', () {
@@ -94,6 +106,9 @@ void main() {
       when(() => repo.requestTrip(
             candidate: any(named: 'candidate'),
             passengerId: any(named: 'passengerId'),
+            tripType: any(named: 'tripType'),
+            selectedDays: any(named: 'selectedDays'),
+            endDate: any(named: 'endDate'),
           )).thenAnswer((_) async => Right(TripEntity(match: _match())));
 
       final trip = await notifier.requestTrip(
@@ -109,6 +124,9 @@ void main() {
       when(() => repo.requestTrip(
             candidate: any(named: 'candidate'),
             passengerId: any(named: 'passengerId'),
+            tripType: any(named: 'tripType'),
+            selectedDays: any(named: 'selectedDays'),
+            endDate: any(named: 'endDate'),
           )).thenAnswer(
         (_) async => const Left(ServerFailure(message: 'boom')),
       );
@@ -121,21 +139,91 @@ void main() {
       expect(trip, isNull);
       expect(notifier.state, isA<AsyncError<void>>());
     });
+
+    test('forwards tripType, selectedDays and endDate to the repo', () async {
+      when(() => repo.requestTrip(
+            candidate: any(named: 'candidate'),
+            passengerId: any(named: 'passengerId'),
+            tripType: any(named: 'tripType'),
+            selectedDays: any(named: 'selectedDays'),
+            endDate: any(named: 'endDate'),
+          )).thenAnswer((_) async => Right(TripEntity(match: _match())));
+
+      final endDate = DateTime(2026, 6, 30);
+      await notifier.requestTrip(
+        candidate: _candidate(),
+        passengerId: 'p1',
+        tripType: MatchTripType.recurring,
+        selectedDays: const ['mon', 'wed'],
+        endDate: endDate,
+      );
+
+      verify(() => repo.requestTrip(
+            candidate: any(named: 'candidate'),
+            passengerId: 'p1',
+            tripType: MatchTripType.recurring,
+            selectedDays: const ['mon', 'wed'],
+            endDate: endDate,
+          )).called(1);
+    });
   });
 
   group('accept / reject', () {
-    test('accept delegates to respondToRequest with accepted', () async {
+    test('accept on recurring match invokes seedInitialOccurrences',
+        () async {
       when(() => repo.respondToRequest(
             matchId: any(named: 'matchId'),
             decision: any(named: 'decision'),
           )).thenAnswer((_) async => const Right(null));
+      when(() => repo.getTrip('m1'))
+          .thenAnswer((_) async => Right(TripEntity(
+                match: _match(tripType: MatchTripType.recurring),
+              )));
+      when(() => occRepo.seedInitialOccurrences('m1'))
+          .thenAnswer((_) async => const Right(<TripOccurrence>[]));
 
       final ok = await notifier.accept('m1');
+
       expect(ok, true);
       verify(() => repo.respondToRequest(
             matchId: 'm1',
             decision: MatchStatus.accepted,
           )).called(1);
+      verify(() => occRepo.seedInitialOccurrences('m1')).called(1);
+    });
+
+    test('accept on oneTime match does NOT invoke seed', () async {
+      when(() => repo.respondToRequest(
+            matchId: any(named: 'matchId'),
+            decision: any(named: 'decision'),
+          )).thenAnswer((_) async => const Right(null));
+      when(() => repo.getTrip('m1'))
+          .thenAnswer((_) async => Right(TripEntity(
+                match: _match(tripType: MatchTripType.oneTime),
+              )));
+
+      final ok = await notifier.accept('m1');
+
+      expect(ok, true);
+      verifyNever(() => occRepo.seedInitialOccurrences(any()));
+    });
+
+    test('seed failure does not degrade accept', () async {
+      when(() => repo.respondToRequest(
+            matchId: any(named: 'matchId'),
+            decision: any(named: 'decision'),
+          )).thenAnswer((_) async => const Right(null));
+      when(() => repo.getTrip('m1'))
+          .thenAnswer((_) async => Right(TripEntity(
+                match: _match(tripType: MatchTripType.recurring),
+              )));
+      when(() => occRepo.seedInitialOccurrences('m1')).thenAnswer(
+        (_) async => const Left(ServerFailure(message: 'seed failed')),
+      );
+
+      final ok = await notifier.accept('m1');
+
+      expect(ok, true);
     });
 
     test('reject on failure sets error and returns false', () async {

@@ -20,6 +20,7 @@ import 'package:yo_te_llevo/features/routes/domain/entities/route_schedule.dart'
 import 'package:yo_te_llevo/features/routes/domain/repositories/driver_route_repository.dart';
 import 'package:yo_te_llevo/features/trips/data/datasources/trip_remote_datasource.dart';
 import 'package:yo_te_llevo/features/trips/data/repositories/trip_repository_impl.dart';
+import 'package:yo_te_llevo/features/trips/domain/entities/match_series_status.dart';
 
 class MockTripRemoteDataSource extends Mock implements TripRemoteDataSource {}
 
@@ -161,6 +162,52 @@ void main() {
         (f) => expect(f, isA<ServerFailure>()),
         (_) => fail('Should be Left'),
       );
+    });
+
+    test(
+        'creates recurring match with departureTime, seriesStatus=draft and endDate',
+        () async {
+      Match? captured;
+      when(() => remote.createMatch(any())).thenAnswer((inv) async {
+        captured = inv.positionalArguments[0] as Match;
+        return _match();
+      });
+      final endDate = DateTime(2026, 6, 30);
+      final result = await repo.requestTrip(
+        candidate: _candidate(),
+        passengerId: 'p1',
+        tripType: MatchTripType.recurring,
+        selectedDays: const ['mon', 'wed'],
+        endDate: endDate,
+      );
+      expect(result.isRight(), true);
+      expect(captured, isNotNull);
+      expect(captured!.tripType, MatchTripType.recurring);
+      expect(captured!.days, ['mon', 'wed']);
+      expect(captured!.departureTime, '08:00');
+      expect(captured!.seriesStatus, MatchSeriesStatus.draft);
+      expect(captured!.endDate, endDate);
+    });
+
+    test(
+        'oneTime match leaves seriesStatus null but still sets departureTime from route',
+        () async {
+      Match? captured;
+      when(() => remote.createMatch(any())).thenAnswer((inv) async {
+        captured = inv.positionalArguments[0] as Match;
+        return _match();
+      });
+      final result = await repo.requestTrip(
+        candidate: _candidate(),
+        passengerId: 'p1',
+      );
+      expect(result.isRight(), true);
+      expect(captured!.tripType, MatchTripType.oneTime);
+      expect(captured!.seriesStatus, isNull);
+      expect(captured!.endDate, isNull);
+      expect(captured!.departureTime, '08:00');
+      // Sin selectedDays, fallback a los días de la ruta.
+      expect(captured!.days, ['mon']);
     });
   });
 

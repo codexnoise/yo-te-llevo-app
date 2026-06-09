@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yo_te_llevo/features/matching/domain/entities/recurrence_duration.dart';
 import 'package:yo_te_llevo/features/matching/presentation/screens/search_trip_screen.dart';
 
 void main() {
@@ -52,6 +53,42 @@ void main() {
       await tester.pump();
 
       expect(chip().selected, isTrue);
+    });
+
+    testWidgets('recurring toggle is OFF by default and dropdown is hidden',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(home: SearchTripScreen()),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Viaje recurrente'), findsOneWidget);
+      expect(
+        find.byType(DropdownButtonFormField<RecurrenceDuration>),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+        'enabling recurring toggle reveals duration dropdown with "1 mes" default',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(home: SearchTripScreen()),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pump();
+
+      expect(
+        find.byType(DropdownButtonFormField<RecurrenceDuration>),
+        findsOneWidget,
+      );
+      expect(find.text('1 mes'), findsOneWidget);
     });
   });
 }

@@ -13,10 +13,18 @@ abstract class TripRepository {
   /// [tripType] determina si el match es `oneTime` (un único viaje) o
   /// `recurring` (serie semanal). El caller debe pasarlo explícitamente —
   /// el default es `oneTime` para evitar contaminar tests legacy.
+  ///
+  /// [selectedDays] son los días que el pasajero seleccionó en la búsqueda.
+  /// Si es null se usan los días completos de la ruta del conductor (back-compat).
+  ///
+  /// [endDate] sólo aplica a series recurring; define hasta cuándo se generan
+  /// ocurrencias. Null = serie indefinida.
   Future<Either<Failure, TripEntity>> requestTrip({
     required MatchCandidate candidate,
     required String passengerId,
     MatchTripType tripType = MatchTripType.oneTime,
+    List<String>? selectedDays,
+    DateTime? endDate,
   });
 
   /// El conductor responde una solicitud pending con [decision] ∈

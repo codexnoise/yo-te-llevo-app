@@ -9,6 +9,7 @@ import '../../data/datasources/trip_remote_datasource.dart';
 import '../../data/repositories/trip_repository_impl.dart';
 import '../../domain/entities/trip.dart';
 import '../../domain/repositories/trip_repository.dart';
+import 'trip_occurrence_providers.dart';
 import 'trips_notifier.dart';
 
 final tripRemoteDataSourceProvider = Provider<TripRemoteDataSource>((ref) {
@@ -73,5 +74,8 @@ final tripDetailStreamProvider =
 /// mantiene reactiva via [activeTripsStreamProvider].
 final tripsNotifierProvider =
     StateNotifierProvider.autoDispose<TripsNotifier, AsyncValue<void>>((ref) {
-  return TripsNotifier(ref.watch(tripRepositoryProvider));
+  return TripsNotifier(
+    ref.watch(tripRepositoryProvider),
+    ref.watch(tripOccurrenceRepositoryProvider),
+  );
 });
