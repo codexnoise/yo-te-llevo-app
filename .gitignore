@@ -91,3 +91,6 @@ firestore-rules-tests/coverage/
 # Claude
 .claude/
 claude/
+
+# FVM Version Cache
+.fvm/
